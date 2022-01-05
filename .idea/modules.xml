@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/SS_4_Bikers.iml" filepath="$PROJECT_DIR$/.idea/modules/SS_4_Bikers.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/SS_4_Bikers.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/SS_4_Bikers.app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/digitalspeedlib/SS_4_Bikers.digitalspeedlib.iml" filepath="$PROJECT_DIR$/.idea/modules/digitalspeedlib/SS_4_Bikers.digitalspeedlib.iml" />
+    </modules>
+  </component>
+</project>

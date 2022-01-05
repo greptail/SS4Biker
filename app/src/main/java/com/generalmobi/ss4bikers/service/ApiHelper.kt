@@ -34,7 +34,13 @@ object ApiHelper {
         val header = HashMap<String, String>()
         header[ApiConstants.HEADER_KEY_1] = ApiConstants.HEADER_VALUE_1
         val apiService = ApiClient.getClient(ApiConstants.DIRECTION_API_URL, header)
-        val responseObservable = apiService.callDirections("driving", "less_driving", origin, destination, "AIzaSyCNhwW2oWrrYsX4HWbpYN0juByUocXREJY")
+        val responseObservable = apiService.callDirections(
+            "driving",
+            "less_driving",
+            origin,
+            destination,
+            "AIzaSyBWEpF9w4RVhai4UQsOgk7t2dsK0bn5MiE"
+        )
             .subscribeOn(Schedulers.newThread())
             .observeOn(AndroidSchedulers.mainThread())
         apiObserver.execute(responseObservable, apiObserver)

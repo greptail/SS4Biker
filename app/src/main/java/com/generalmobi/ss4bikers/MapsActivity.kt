@@ -1,6 +1,5 @@
 package com.generalmobi.ss4bikers
 
-import android.animation.ValueAnimator
 import android.content.Context
 import android.content.Intent
 import android.location.Address
@@ -11,14 +10,9 @@ import android.text.TextUtils
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import android.view.animation.LinearInterpolator
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import com.generalmobi.ss4bikers.models.Result
-import com.generalmobi.ss4bikers.service.ApiHelper
-import com.generalmobi.ss4bikers.service.ApiObserver
 import com.generalmobi.ss4bikers.service.GenericResponse
-import com.generalmobi.ss4bikers.service.ServiceCallback
 import com.generalmobi.ss4bikers.utils.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -36,7 +30,6 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import java.util.*
 import kotlin.collections.ArrayList
-import kotlin.math.abs
 
 
 @Suppress("DEPRECATION")
@@ -209,85 +202,72 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
 
     private fun callGetData(){
-        val biker = LatLng(28.442220, 77.302760)
+        val data =
+            GenericResponse("PK1,869867030076261,2265,2291,2602,0,0,0,0,GNRMC,123519,A,4807.038,N,01131.000,E,022.4,084.4,230394,003.1,W*6A")
+        EventBus.getDefault().post(data.isShakeDetected)
+        digit_speed_view.updateSpeed(data.speed)
+        val biker = LatLng(data.latitude, data.longitude)
 
         val location = Location("Biker")
-        location.latitude = 28.442220
-        location.longitude = 77.302760
+        location.latitude = data.latitude
+        location.longitude = data.longitude
         val title = getLocationDetails(location)
 
-        mMap.addMarker(MarkerOptions().position(biker).title(title))
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(biker))
-        mMap.moveCamera(CameraUpdateFactory.newCameraPosition(
-            CameraPosition.Builder()
-                .target(mMap.cameraPosition.target)
-                .zoom(17.0f)
-                .bearing(30.0f)
-                .tilt(45.0f)
-                .build()))
-        val apiDirections = ApiObserver(context, object : ServiceCallback<Result> {
-            override fun onResponse(response: Result) {
-                val routeList = response.routes
-                for (route in routeList) {
-                    val polyLine = route.overviewPolyline.points
-                    polyLineList = decodePoly(polyLine)
-                    drawPolyLineAndAnimateCar(biker)
-                }
-            }
+        mMap.uiSettings.setAllGesturesEnabled(true)
+        mMap.addMarker(
+            MarkerOptions()
+                .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_marker))
+                .position(biker)
+                .title(title)
+        )
+        mMap.moveCamera(
+            CameraUpdateFactory.newCameraPosition(
+                CameraPosition.Builder()
+                    .target(biker)
+                    .zoom(17.0f)
+                    .bearing(30.0f)
+                    .tilt(45.0f)
+                    .build()
+            )
+        )
 
-        })
-        ApiHelper.callDirections(context, "28.442220,77.302760", "28.444040,77.313110", apiDirections)
+        destination = origin
+        origin = "${data.latitude},${data.longitude}"
 
+        lastUpdate.text = "Last Updated: ${data.lastUpdate}"
     }/*{
         val apiObserver = ApiObserver(context, object : ServiceCallback<String> {
             override fun onResponse(response: String) {
                 if (response.startsWith("200")) {
-                    val data = GenericResponse(response)
-                    EventBus.getDefault().post(data.isShakeDetected)
-                    digit_speed_view.updateSpeed(data.speed)
-                    val biker = LatLng(data.latitude, data.longitude)
+        val data = GenericResponse("PK1,869867030076261,2265,2291,2602,0,0,0,0,GNRMC,123519,A,4807.038,N,01131.000,E,022.4,084.4,230394,003.1,W*6A")
+        EventBus.getDefault().post(data.isShakeDetected)
+        digit_speed_view.updateSpeed(data.speed)
+        val biker = LatLng(data.latitude, data.longitude)
 
-                    val location = Location("Biker")
-                    location.latitude = data.latitude
-                    location.longitude = data.longitude
-                    val title = getLocationDetails(location)
-//                    mMap.uiSettings.setAllGesturesEnabled(true)
-//                    mMap.addMarker(MarkerOptions()
-//                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_marker))
-//                        .position(biker)
-//                        .title(title)
-//                    )
-//                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(biker, 16.0f))
-                    mMap.clear()
-                    mMap.addMarker(MarkerOptions().position(biker).title(title))
-                    mMap.moveCamera(CameraUpdateFactory.newLatLng(biker))
-                    mMap.moveCamera(CameraUpdateFactory.newCameraPosition(
-                        CameraPosition.Builder()
-                            .target(mMap.cameraPosition.target)
-                            .zoom(17.0f)
-                            .bearing(30.0f)
-                            .tilt(45.0f)
-                            .build()))
+        val location = Location("Biker")
+        location.latitude = data.latitude
+        location.longitude = data.longitude
+        val title = getLocationDetails(location)
 
-                    if (origin != null && destination != null) {
-                        val apiDirections = ApiObserver(context, object : ServiceCallback<Result> {
-                            override fun onResponse(response: Result) {
-                                val routeList = response.routes
-                                for (route in routeList) {
-                                    val polyLine = route.overviewPolyline.points
-                                    polyLineList = decodePoly(polyLine)
-                                    drawPolyLineAndAnimateCar(biker)
-                                }
-                            }
+        mMap.uiSettings.setAllGesturesEnabled(true)
+        mMap.addMarker(MarkerOptions()
+            .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_marker))
+            .position(biker)
+            .title(title)
+        )
+        mMap.moveCamera(CameraUpdateFactory.newCameraPosition(
+            CameraPosition.Builder()
+                .target(biker)
+                .zoom(17.0f)
+                .bearing(30.0f)
+                .tilt(45.0f)
+                .build()))
 
-                        })
-                        ApiHelper.callDirections(context, origin!!, destination!!, apiDirections)
-                    }
-                    destination = origin
-                    origin = "${data.latitude},${data.longitude}"
+        destination = origin
+        origin = "${data.latitude},${data.longitude}"
 
-                    lastUpdate.text = "Last Updated: ${data.lastUpdate}"
-                }else{
+        lastUpdate.text = "Last Updated: ${data.lastUpdate}"
+    }else{
                     EventBus.getDefault().post(response.split("-")[1])
                 }
                 handler.removeCallbacks(runnable)
@@ -340,135 +320,5 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         address?.let { title = it.getAddressLine(0) }
 
         return title
-    }
-
-    fun drawPolyLineAndAnimateCar(biker: LatLng) {
-        //Adjusting bounds
-        val builder = LatLngBounds.Builder()
-        if (polyLineList != null) {
-            for (latLng in polyLineList) {
-                builder.include(latLng)
-            }
-        }else{
-            return
-        }
-        val bounds = builder.build()
-        val mCameraUpdate = CameraUpdateFactory.newLatLngBounds(bounds, 2)
-        mMap.animateCamera(mCameraUpdate)
-
-        mMap.addMarker(
-            MarkerOptions()
-                .position(polyLineList.get(polyLineList.size - 1))
-        )
-
-        val polylineAnimator = ValueAnimator.ofInt(0, 100)
-        polylineAnimator.duration = 2000
-        polylineAnimator.interpolator = LinearInterpolator()
-        polylineAnimator.addUpdateListener { valueAnimator ->
-            val points = greyPolyLine?.points
-            val percentValue = valueAnimator.animatedValue as Int
-            val size = points!!.size
-            val newPoints = (size * (percentValue / 100.0f)).toInt()
-            val p = points.subList(0, newPoints)
-            blackPolyline!!.points = p
-        }
-        polylineAnimator.start()
-        marker = mMap.addMarker(
-            MarkerOptions().position(biker)
-                .flat(true)
-                .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_marker))
-        )
-        index = -1
-        next = 1
-        dirHandler = Handler()
-        dirHandler.postDelayed(object : Runnable {
-            override fun run() {
-                if (index < polyLineList.size - 1) {
-                    index++
-                    next = index + 1
-                }
-                if (index < polyLineList.size - 1) {
-                    startPosition = polyLineList.get(index)
-                    endPosition = polyLineList.get(next)
-                }
-                val valueAnimator = ValueAnimator.ofInt(0, 1)
-                valueAnimator.duration = 3000
-                valueAnimator.interpolator = LinearInterpolator()
-                valueAnimator.addUpdateListener { valueAnimator ->
-                    v = valueAnimator.animatedFraction
-                    lng = v * endPosition!!.longitude + (1 - v) * startPosition!!.longitude
-                    lat = v * endPosition!!.latitude + (1 - v) * startPosition!!.latitude
-                    val newPos = LatLng(lat, lng)
-                    marker.position = newPos
-                    marker.setAnchor(0.5f, 0.5f)
-                    marker.rotation = getBearing(startPosition!!, newPos)
-                    mMap.animateCamera(
-                        CameraUpdateFactory.newCameraPosition(
-                            CameraPosition.Builder().target(newPos)
-                                .zoom(15.5f).build()
-                        )
-                    )
-                }
-                valueAnimator.start()
-                if (index != polyLineList.size - 1) {
-                    dirHandler.postDelayed(this, 3000)
-                }
-            }
-        }, 3000)
-    }
-
-
-    fun decodePoly(encoded: String): List<LatLng> {
-        val poly = ArrayList<LatLng>()
-        var index = 0
-        val len = encoded.length
-        var lat = 0
-        var lng = 0
-
-        while (index < len) {
-            var b: Int
-            var shift = 0
-            var result = 0
-            do {
-                b = encoded[index++].toInt() - 63
-                result = result or (b and 0x1f shl shift)
-                shift += 5
-            } while (b >= 0x20)
-            val dlat = if (result and 1 != 0) (result shr 1).inv() else result shr 1
-            lat += dlat
-
-            shift = 0
-            result = 0
-            do {
-                b = encoded[index++].toInt() - 63
-                result = result or (b and 0x1f shl shift)
-                shift += 5
-            } while (b >= 0x20)
-            val dlng = if (result and 1 != 0) (result shr 1).inv() else result shr 1
-            lng += dlng
-
-            val p = LatLng(
-                lat.toDouble() / 1E5,
-                lng.toDouble() / 1E5
-            )
-            poly.add(p)
-        }
-
-        return poly
-    }
-
-    fun getBearing(begin: LatLng, end: LatLng): Float {
-        val lat = abs(begin.latitude - end.latitude)
-        val lng = abs(begin.longitude - end.longitude)
-
-        if (begin.latitude < end.latitude && begin.longitude < end.longitude)
-            return Math.toDegrees(Math.atan(lng / lat)).toFloat()
-        else if (begin.latitude >= end.latitude && begin.longitude < end.longitude)
-            return (90 - Math.toDegrees(Math.atan(lng / lat)) + 90).toFloat()
-        else if (begin.latitude >= end.latitude && begin.longitude >= end.longitude)
-            return (Math.toDegrees(Math.atan(lng / lat)) + 180).toFloat()
-        else if (begin.latitude < end.latitude && begin.longitude >= end.longitude)
-            return (90 - Math.toDegrees(Math.atan(lng / lat)) + 270).toFloat()
-        return -1f
     }
 }
